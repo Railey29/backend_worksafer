@@ -121,7 +121,8 @@ app.use("/auth", otpRoutes);
 // ============================
 app.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, password, department, verifiedToken } = req.body;
+    const { firstName, lastName, email, password, department, verifiedToken } =
+      req.body;
 
     // Basic field validation
     if (!firstName || !lastName || !email || !password || !department) {
@@ -327,7 +328,14 @@ app.post("/google-login", async (req, res) => {
     if (!user) {
       const gFirstName = name ? name.split(" ")[0] : "";
       const gLastName = name ? name.split(" ").slice(1).join(" ") : "";
-      user = new User({ firstName: gFirstName, lastName: gLastName, email, googleId: sub, picture, department });
+      user = new User({
+        firstName: gFirstName,
+        lastName: gLastName,
+        email,
+        googleId: sub,
+        picture,
+        department,
+      });
       await user.save();
     } else if (!user.department) {
       user.department = department;
@@ -681,7 +689,8 @@ app.get("/auth/2fa-status", verifyToken, async (req, res) => {
 // ============================
 app.put("/api/user/profile", verifyToken, async (req, res) => {
   try {
-    const { firstName, lastName, email, department, role, phoneNumber } = req.body;
+    const { firstName, lastName, email, department, role, phoneNumber } =
+      req.body;
 
     if (!firstName || !lastName || !department) {
       return res

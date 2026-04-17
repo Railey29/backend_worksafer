@@ -131,11 +131,9 @@ router.post("/send-otp", async (req, res) => {
       await sendOTPEmail(email, otp);
     } catch (mailErr) {
       console.error("Gmail SMTP error:", mailErr);
-      return res
-        .status(500)
-        .json({
-          error: "Failed to send verification email. Please try again.",
-        });
+      return res.status(500).json({
+        error: "Failed to send verification email. Please try again.",
+      });
     }
 
     console.log(`✅ OTP sent to: ${email}`);
@@ -178,31 +176,25 @@ router.post("/verify-otp", async (req, res) => {
     });
 
     if (!otpRecord) {
-      return res
-        .status(400)
-        .json({
-          error: "No verification code found. Please request a new one.",
-        });
+      return res.status(400).json({
+        error: "No verification code found. Please request a new one.",
+      });
     }
 
     // Check expiry
     if (Date.now() > otpRecord.expiresAt) {
       await OTPVerification.deleteOne({ email: email.toLowerCase() });
-      return res
-        .status(400)
-        .json({
-          error: "Verification code has expired. Please request a new one.",
-        });
+      return res.status(400).json({
+        error: "Verification code has expired. Please request a new one.",
+      });
     }
 
     // Rate-limit: max 5 attempts
     if (otpRecord.attempts >= 5) {
       await OTPVerification.deleteOne({ email: email.toLowerCase() });
-      return res
-        .status(429)
-        .json({
-          error: "Too many incorrect attempts. Please request a new code.",
-        });
+      return res.status(429).json({
+        error: "Too many incorrect attempts. Please request a new code.",
+      });
     }
 
     // Compare OTP

@@ -15,7 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // ============================
 const generateBackupCodes = () => {
   return Array.from({ length: 10 }, () =>
-    Math.random().toString(36).substring(2, 10).toUpperCase()
+    Math.random().toString(36).substring(2, 10).toUpperCase(),
   );
 };
 
@@ -115,7 +115,7 @@ router.post("/login", async (req, res) => {
       const tempToken = jwt.sign(
         { id: user._id, tempAccess: true }, // include user ID and tempAccess flag
         JWT_SECRET,
-        { expiresIn: "5m" } // token valid for 5 minutes
+        { expiresIn: "5m" }, // token valid for 5 minutes
       );
       return res.json({
         requiresTwoFactor: true,
@@ -159,7 +159,14 @@ router.post("/google-login", async (req, res) => {
     if (!user) {
       const gFirstName = name ? name.split(" ")[0] : "";
       const gLastName = name ? name.split(" ").slice(1).join(" ") : "";
-      user = new User({ firstName: gFirstName, lastName: gLastName, email, googleId: sub, picture, department });
+      user = new User({
+        firstName: gFirstName,
+        lastName: gLastName,
+        email,
+        googleId: sub,
+        picture,
+        department,
+      });
       await user.save();
     } else if (!user.department) {
       user.department = department;
@@ -177,7 +184,7 @@ router.post("/google-login", async (req, res) => {
       const tempToken = jwt.sign(
         { id: user._id, email: user.email, tempAccess: true },
         JWT_SECRET,
-        { expiresIn: "5m" }
+        { expiresIn: "5m" },
       );
       return res.json({
         requiresTwoFactor: true,
@@ -314,7 +321,7 @@ router.post("/disable-2fa", verifyToken, async (req, res) => {
         twoFactorSecret: null,
         backupCodes: [],
       },
-      { new: true }
+      { new: true },
     );
 
     res.json({ success: true, message: "2FA disabled" });
@@ -360,7 +367,7 @@ router.put("/settings", verifyToken, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { $set: { settings: updates } },
-      { new: true }
+      { new: true },
     );
 
     res.json({
@@ -377,7 +384,7 @@ router.put("/settings", verifyToken, async (req, res) => {
 router.get("/profile", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "-password -twoFactorSecret -backupCodes"
+      "-password -twoFactorSecret -backupCodes",
     );
 
     if (!user) {
