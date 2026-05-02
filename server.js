@@ -747,26 +747,54 @@ app.post("/api/user/change-password", verifyToken, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: "Both passwords are required" });
+      return res
+        .status(400)
+        .json({ error: "Current password and new password are required." });
+    }
+
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({ error: "New password must be at least 8 characters long." });
+    }
+
+    if (currentPassword === newPassword) {
+      return res
+        .status(400)
+        .json({
+          error: "New password must be different from your current password.",
+        });
     }
 
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Google-authenticated users may not have a password
+    if (!user.password) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "Password change is not available for accounts linked via Google Sign-In.",
+        });
     }
 
     const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) {
-      return res.status(401).json({ error: "Current password is incorrect" });
+      return res.status(401).json({ error: "Current password is incorrect." });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await User.findByIdAndUpdate(req.user.id, { password: hashedPassword });
 
-    res.json({ success: true, message: "Password changed successfully" });
+    res.json({ success: true, message: "Password changed successfully." });
   } catch (error) {
     console.error("Change password error:", error);
-    res.status(500).json({ error: "Failed to change password" });
+    res
+      .status(500)
+      .json({ error: "Failed to change password. Please try again." });
   }
 });
 
